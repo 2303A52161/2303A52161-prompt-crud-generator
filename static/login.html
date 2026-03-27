@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CRUD Architect — Sign In</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+</head>
+<body class="auth-body">
+
+  <div class="auth-bg">
+    <div class="auth-grid"></div>
+  </div>
+
+  <div class="auth-container">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="auth-logo-icon">⚙</div>
+      <span class="auth-logo-text">CRUD Architect</span>
+    </div>
+
+    <!-- Card -->
+    <div class="auth-card" id="authCard">
+
+      <!-- Toggle tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabSignin" onclick="showTab('signin')">Sign In</button>
+        <button class="auth-tab" id="tabSignup" onclick="showTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- Error banner -->
+      <div class="auth-error" id="authError"></div>
+
+      <!-- SIGN IN FORM -->
+      <form id="signinForm" class="auth-form" onsubmit="handleSignin(event)">
+        <div class="field-group">
+          <label class="field-label">Email address</label>
+          <input type="email" id="signinEmail" class="field-input" placeholder="you@example.com" required autocomplete="email"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <div class="field-input-wrap">
+            <input type="password" id="signinPassword" class="field-input" placeholder="••••••••" required autocomplete="current-password"/>
+            <button type="button" class="field-eye" onclick="togglePass('signinPassword', this)">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="auth-btn" id="signinBtn">
+          <span class="btn-text">Sign In</span>
+          <span class="btn-loader" style="display:none">⟳</span>
+        </button>
+        <p class="auth-hint">Don't have an account? <a href="#" onclick="showTab('signup')">Sign up free</a></p>
+      </form>
+
+      <!-- SIGN UP FORM -->
+      <form id="signupForm" class="auth-form" style="display:none" onsubmit="handleSignup(event)">
+        <div class="field-group">
+          <label class="field-label">Full name</label>
+          <input type="text" id="signupName" class="field-input" placeholder="Your name" required autocomplete="name"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Email address</label>
+          <input type="email" id="signupEmail" class="field-input" placeholder="you@example.com" required autocomplete="email"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Password <span class="field-hint">(min. 6 characters)</span></label>
+          <div class="field-input-wrap">
+            <input type="password" id="signupPassword" class="field-input" placeholder="••••••••" required autocomplete="new-password" minlength="6"/>
+            <button type="button" class="field-eye" onclick="togglePass('signupPassword', this)">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="auth-btn" id="signupBtn">
+          <span class="btn-text">Create Account</span>
+          <span class="btn-loader" style="display:none">⟳</span>
+        </button>
+        <p class="auth-hint">Already have an account? <a href="#" onclick="showTab('signin')">Sign in</a></p>
+      </form>
+
+    </div>
+
+    <p class="auth-footer">Your data is stored locally in your browser.</p>
+
+  </div>
+
+  <script src="auth.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (localStorage.getItem('ca_user')) {
+      window.location.href = 'index.html';
+    }
+
+    function showTab(tab) {
+      const isSignin = tab === 'signin';
+      document.getElementById('tabSignin').classList.toggle('active', isSignin);
+      document.getElementById('tabSignup').classList.toggle('active', !isSignin);
+      document.getElementById('signinForm').style.display = isSignin ? '' : 'none';
+      document.getElementById('signupForm').style.display = isSignin ? 'none' : '';
+      document.getElementById('authError').textContent = '';
+    }
+
+    function togglePass(id, btn) {
+      const el = document.getElementById(id);
+      if (el.type === 'password') { el.type = 'text'; btn.textContent = '🙈'; }
+      else                        { el.type = 'password'; btn.textContent = '👁'; }
+    }
+
+    function setLoading(formId, loading) {
+      const btnId = formId === 'signinForm' ? 'signinBtn' : 'signupBtn';
+      const btn = document.getElementById(btnId);
+      btn.querySelector('.btn-text').style.display = loading ? 'none' : '';
+      btn.querySelector('.btn-loader').style.display = loading ? '' : 'none';
+      btn.disabled = loading;
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('authError');
+      el.textContent = msg;
+      el.style.display = msg ? '' : 'none';
+    }
+
+    async function handleSignin(e) {
+      e.preventDefault();
+      showError('');
+      setLoading('signinForm', true);
+      await new Promise(r => setTimeout(r, 600));
+      const email    = document.getElementById('signinEmail').value.trim();
+      const password = document.getElementById('signinPassword').value;
+      const result   = Auth.signin(email, password);
+      if (result.ok) {
+        window.location.href = 'index.html';
+      } else {
+        showError(result.error);
+        setLoading('signinForm', false);
+      }
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      showError('');
+      setLoading('signupForm', true);
+      await new Promise(r => setTimeout(r, 600));
+      const name     = document.getElementById('signupName').value.trim();
+      const email    = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const result   = Auth.signup(name, email, password);
+      if (result.ok) {
+        window.location.href = 'index.html';
+      } else {
+        showError(result.error);
+        setLoading('signupForm', false);
+      }
+    }
+  </script>
+</body>
+</html>

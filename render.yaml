@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: crud-architect
+    env: python
+    region: oregon           # change to: singapore, frankfurt, ohio, virginia
+    plan: free               # free tier is enough for a demo / college project
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+    envVars:
+      # Optional — add your key in the Render dashboard under Environment
+      # The app works without it using built-in templates.
+      - key: ANTHROPIC_API_KEY
+        sync: false          # set manually in dashboard
+      - key: OPENAI_API_KEY
+        sync: false          # set manually in dashboard
